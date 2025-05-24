@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undangan Pernikahan Sinta & Putra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('bg.png'); 
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #4a3b33;
+            overflow-x: hidden; /* Mencegah scroll horizontal utama */
+        }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-dancing { font-family: 'Dancing Script', cursive; }
+
+        #particle-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; 
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute; background-color: rgba(255, 223, 223, 0.6); 
+            border-radius: 50%; animation: float 25s infinite ease-in-out; opacity: 0;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(var(--start-x, 50vw)) scale(var(--start-scale, 0.5)); opacity: 0; }
+            10% { opacity: var(--max-opacity, 0.5); } 
+            50% { transform: translateY(-10vh) translateX(var(--mid-x, 50vw)) scale(1); opacity: var(--mid-opacity, 0.3); }
+            90% { opacity: var(--max-opacity, 0.5); }
+            100% { transform: translateY(100vh) translateX(var(--end-x, 50vw)) scale(var(--end-scale, 0.5)); opacity: 0; }
+        }
+
+        .bird-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; 
+            z-index: 2; 
+            overflow: hidden; 
+        }
+        .bird {
+            position: absolute; width: 50px; 
+            height: auto; opacity: 0.7; 
+            animation-name: fly-across; animation-timing-function: linear;
+            animation-iteration-count: infinite; will-change: transform; 
+        }
+        .bird svg {
+            width: 100%; height: 100%; fill: rgba(250, 250, 250, 0.8); 
+            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.2));
+        }
+        @keyframes fly-across {
+            0% { transform: translateX(-100%) translateY(var(--start-y)) scaleX(1); } 
+            49% { transform: translateX(calc(100vw + 100%)) translateY(var(--mid-y)) scaleX(1); }
+            50% { transform: translateX(calc(100vw + 100%)) translateY(var(--mid-y)) scaleX(-1); } 
+            99% { transform: translateX(-100%) translateY(var(--end-y)) scaleX(-1); }
+            100% { transform: translateX(-100%) translateY(var(--start-y)) scaleX(1); } 
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(15px); 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); 
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative; 
+            z-index: 10; 
+        }
+        /* Icon styling in card */
+        .card-icon {
+            font-size: 2.5rem; /* Ukuran ikon */
+            color: #c8a07d; /* Warna ikon senada dengan tema */
+            margin-bottom: 1rem; /* Jarak ikon ke judul */
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #c8a07d; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; transition: background-color 0.3s ease, transform 0.2s ease; font-weight: 600;
+        }
+        .btn-primary:hover { background-color: #b08862; transform: translateY(-2px); }
+        
+        .btn-secondary {
+            background-color: #eaddd7; color: #4a3b33; padding: 0.5rem 1rem;
+            border-radius: 6px; transition: background-color 0.3s ease, transform 0.2s ease; font-weight: 500;
+            border: 1px solid #d1c4b7;
+        }
+        .btn-secondary:hover { background-color: #d1c4b7; transform: translateY(-1px); }
+
+        input, textarea {
+            border: 1px solid #d1c4b7; border-radius: 8px; padding: 0.75rem; width: 100%;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input:focus, textarea:focus {
+            border-color: #c8a07d; box-shadow: 0 0 0 3px rgba(200, 160, 125, 0.35); outline: none;
+        }
+        
+        .messages-container::-webkit-scrollbar { width: 8px; }
+        .messages-container::-webkit-scrollbar-track { background: #fdf8f5; border-radius: 10px; }
+        .messages-container::-webkit-scrollbar-thumb { background: #d1c4b7; border-radius: 10px; }
+        .messages-container::-webkit-scrollbar-thumb:hover { background: #c8a07d; }
+        
+        .fade-in-section { opacity: 0; transform: translateY(25px); transition: opacity 0.9s ease-out, transform 0.9s ease-out; }
+        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.is-open { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: white; padding: 2rem; border-radius: 12px; text-align: center;
+            max-width: 90%; width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #musicControl {
+            position: fixed; bottom: 20px; right: 20px; background-color: rgba(200, 160, 125, 0.85);
+            color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #musicControl:hover { background-color: #b08862; transform: scale(1.1); }
+
+        .map-container {
+            overflow: hidden; padding-bottom: 56.25%; position: relative; height: 0; border-radius: 12px;
+        }
+        .map-container iframe { left: 0; top: 0; height: 100%; width: 100%; position: absolute; border:0; }
+
+        #imageSliderContainer {
+            width: 100%; height: 100%; position: relative; overflow: hidden; border-radius: 12px; 
+        }
+        .slider-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; border-radius: 12px; 
+        }
+        .slider-image.active { opacity: 1; }
+        .hero-text-shadow { text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2); }
+
+        .gift-details-container.hidden {
+            max-height: 0; opacity: 0; overflow: hidden;
+            transition: max-height 0.7s ease-in-out, opacity 0.5s ease-in-out, margin-top 0.7s ease-in-out;
+            margin-top: 0 !important;
+        }
+        .gift-details-container {
+            max-height: 1000px; opacity: 1; overflow: hidden;
+            transition: max-height 0.7s ease-in-out, opacity 0.5s ease-in-out 0.2s, margin-top 0.7s ease-in-out; 
+            margin-top: 2rem; 
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="particle-container"></div>
+    <div class="bird-container" id="birdContainer">
+    </div>
+
+    <audio id="bgMusic" loop autoplay>
+        <source src="bgmusic.mp3" type="audio/mpeg">
+        Browser Anda tidak mendukung elemen audio.
+    </audio>
+    <button id="musicControl"><i class="fas fa-volume-mute"></i></button>
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <p id="modalTextMessage" class="mb-4 text-lg"></p>
+            <button id="closeModalButton" class="btn-primary">Tutup</button>
+        </div>
+    </div>
+
+    <div class="lg:flex lg:flex-row min-h-screen">
+        
+        <div class="hidden lg:block lg:w-2/5 lg:sticky lg:top-0 lg:h-screen p-8"> 
+            <div id="imageSliderContainer" class="shadow-xl">
+                <img src="foto_01.png" alt="Foto Prewedding Sinta & Putra 1" class="slider-image active" onerror="this.src='https://placehold.co/800x1200/AC8974/FFFFFF?text=Gagal+Muat+1'">
+                <img src="foto_02.png" alt="Foto Prewedding Sinta & Putra 2" class="slider-image" onerror="this.src='https://placehold.co/800x1200/C8A07D/FFFFFF?text=Gagal+Muat+2'">
+                <img src="foto_03.png" alt="Foto Prewedding Sinta & Putra 3" class="slider-image" onerror="this.src='https://placehold.co/800x1200/B08862/FFFFFF?text=Gagal+Muat+3'">
+                <img src="https://placehold.co/800x1200/D1C4B7/4A3B33?text=Sinta+%26+Putra+4" alt="Foto Prewedding Sinta & Putra 4" class="slider-image" onerror="this.src='https://placehold.co/800x1200/D1C4B7/4A3B33?text=Gagal+Muat+4'">
+                <img src="https://placehold.co/800x1200/EADDD7/4A3B33?text=Sinta+%26+Putra+5" alt="Foto Prewedding Sinta & Putra 5" class="slider-image" onerror="this.src='https://placehold.co/800x1200/EADDD7/4A3B33?text=Gagal+Muat+5'">
+            </div>
+        </div>
+
+        <div class="lg:w-3/5 lg:max-w-3xl mx-auto lg:mx-0 lg:px-8 py-8 w-full"> 
+            <div class="container mx-auto px-4 lg:px-0"> 
+
+                <header class="text-center py-12 lg:py-16 hero-content fade-in-section">
+                    <p class="font-playfair text-xl md:text-2xl text-gray-100 hero-text-shadow mb-2">The Wedding Of</p>
+                    <h1 class="font-dancing text-6xl md:text-7xl lg:text-8xl text-white hero-text-shadow mb-4">Sinta & Putra</h1>
+                    <p class="text-lg md:text-xl text-gray-200 hero-text-shadow mb-8" id="weddingDate">Sabtu, 14 Desember 2024</p>
+                    
+                    <div class="bg-white/80 backdrop-blur-md p-6 rounded-lg shadow-lg inline-block">
+                        <p class="text-md md:text-lg text-gray-700 mb-1">Kepada Yth.</p>
+                        <p class="font-playfair text-xl md:text-2xl font-semibold text-[#a07c5b]" id="guestName">Bapak/Ibu/Saudara/i</p>
+                        <p class="text-xs text-gray-500 mt-2">Mohon maaf apabila ada kesalahan dalam penulisan nama dan gelar.</p>
+                    </div>
+                </header>
+
+                <section class="my-10 lg:my-12 fade-in-section card">
+                    <div class="card-icon"><i class="fas fa-calendar-alt"></i></div> 
+                    <h2 class="font-playfair text-3xl text-center text-[#a07c5b] mb-8">Detail Acara</h2>
+                    <div class="grid md:grid-cols-2 gap-8 text-center">
+                        <div>
+                            <h3 class="font-semibold text-xl text-[#c8a07d] mb-2">Akad Nikah</h3>
+                            <p>Pukul 09:00 - 10:00 WIB</p>
+                            <p>Masjid Istiqlal, Jakarta</p>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-xl text-[#c8a07d] mb-2">Resepsi Pernikahan</h3>
+                            <p>Pukul 12:00 - 15:00 WIB</p>
+                            <p>Gedung Wanita Solo (Sasana Wanita)</p>
+                        </div>
+                    </div>
+
+                </section>
+
+                <section class="my-10 lg:my-12 fade-in-section card">
+                    <div class="card-icon"><i class="fas fa-heart"></i></div> 
+                    <h2 class="font-playfair text-3xl text-center text-[#a07c5b] mb-6">Kisah Kami</h2>
+                    <p class="text-center text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                        "Cinta adalah takdir yang mempertemukan dua jiwa. Perjalanan kami dimulai dari sebuah pertemuan sederhana, tumbuh bersama tawa dan air mata, hingga akhirnya kami memutuskan untuk mengikat janji suci. Kami bersyukur atas setiap momen dan berharap dapat berbagi kebahagiaan ini bersama Anda."
+                    </p>
+                </section>
+                
+                <section id="lokasi" class="my-10 lg:my-12 fade-in-section card">
+                    <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div> 
+                    <h2 class="font-playfair text-3xl text-center text-[#a07c5b] mb-6">Lokasi Resepsi</h2>
+                    <p class="text-center text-gray-700 mb-1">Gedung Wanita Solo (Sasana Wanita)</p>
+                    <p class="text-center text-gray-500 text-sm mb-6">Jl. Menteri Supeno No.1, Manahan, Kec. Banjarsari, Kota Surakarta, Jawa Tengah 57139</p>
+                    <div class="map-container shadow-lg">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3955.100030084178!2d110.80577341538196!3d-7.56377687674762!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a1663250d5f7f%3A0x5a334f983e82b46!2sGedung%20Wanita%20Solo%20(Sasana%20Wanita)!5e0!3m2!1sen!2sid!4v1684906800000!5m2!1sen!2sid" 
+                            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </section>
+
+                <section class="my-10 lg:my-12 fade-in-section card lg:hidden">
+                    <div class="card-icon"><i class="fas fa-images"></i></div> 
+                    <h2 class="font-playfair text-3xl text-center text-[#a07c5b] mb-6">Galeri Kenangan</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <img src="foto_01.png" alt="Foto Kenangan 1" class="rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/f0e2d6/8c6b52?text=Gagal+Muat'">
+                        <img src="foto_02.png" alt="Foto Kenangan 2" class="rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/e8d8c9/8c6b52?text=Gagal+Muat'">
+                        <img src="foto_03.png" alt="Foto Kenangan 3" class="rounded-lg shadow-md aspect-video object-cover col-span-2 sm:col-span-1" onerror="this.src='https://placehold.co/600x400/f5eadf/8c6b52?text=Gagal+Muat'">
+                    </div>
+                </section>
+
+                <section id="weddingGift" class="my-10 lg:my-12 fade-in-section card">
+                    <div class="card-icon"><i class="fas fa-gift"></i></div> 
+                    <h2 class="font-playfair text-3xl text-center text-[#a07c5b] mb-6">Wedding Gift</h2>
+                    <p class="text-center text-gray-700 leading-relaxed max-w-xl mx-auto mb-6">
+                        Doa restu Anda adalah hadiah terindah bagi kami. Namun, jika Anda berkenan memberikan tanda kasih, kami akan menerimanya dengan penuh syukur.
+                    </p>
+                    <div class="text-center mb-8">
+                        <button id="toggleGiftButton" class="btn-primary">Tampilkan Info Hadiah</button>
+                    </div>
+
+                    <div id="giftDetailsContainer" class="gift-details-container hidden">
+                        <div class="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                            <div class="bg-[#fefcfb] p-6 rounded-lg shadow-sm border border-gray-200/80">
+                                <h3 class="font-semibold text-lg text-[#a07c5b] mb-2">Transfer Bank</h3>
+                                <p class="text-sm text-gray-600">Bank Contoh (BCA)</p>
+                                <p class="text-lg font-medium text-gray-800 my-1" id="bankAccountNo">123-456-7890</p>
+                                <p class="text-sm text-gray-600 mb-3">a.n. Sinta Purnama</p>
+                                <button onclick="copyToClipboard('bankAccountNo', 'Nomor rekening Bank Contoh')" class="btn-secondary text-xs w-full sm:w-auto">Salin No. Rekening</button>
+                            </div>
+                            <div class="bg-[#fefcfb] p-6 rounded-lg shadow-sm border border-gray-200/80">
+                                <h3 class="font-semibold text-lg text-[#a07c5b] mb-2">E-Wallet</h3>
+                                <p class="text-sm text-gray-600">ContohPay (GoPay/OVO)</p>
+                                <p class="text-lg font-medium text-gray-800 my-1" id="eWalletNo">0812-3456-7890</p>
+                                <p class="text-sm text-gray-600 mb-3">a.n. Putra Wijaya</p>
+                                <button onclick="copyToClipboard('eWalletNo', 'Nomor ContohPay')" class="btn-secondary text-xs w-full sm:w-auto">Salin No. E-Wallet</button>
+                            </div>
+                        </div>
+                        <p class="text-center text-gray-600 leading-relaxed max-w-xl mx-auto mt-8 text-sm">
+                            Untuk konfirmasi hadiah atau jika Anda mengirimkan kado fisik, silakan hubungi kami melalui WhatsApp: 
+                            <a href="https://wa.me/6281234567890?text=Halo%20Sinta%20%26%20Putra,%20saya%20ingin%20konfirmasi%20hadiah." target="_blank" class="text-[#c8a07d] hover:underline">0812-3456-7890 (Admin)</a>.
+                        </p>
+                    </div>
+                </section>
+
+                <section id="ucapan" class="my-10 lg:my-12 fade-in-section card">
+                    <div class="card-icon"><i class="fas fa-comments"></i></div> 
+                    <h2 class="font-playfair text-3xl text-center text-[#a07c5b] mb-6">Ucapan Selamat</h2>
+                    <div class="max-w-xl mx-auto">
+                        <form id="ucapanForm" class="space-y-4 mb-8">
+                            <div>
+                                <label for="namaPengirim" class="block text-sm font-medium text-gray-700 mb-1">Nama Anda</label>
+                                <input type="text" id="namaPengirim" name="namaPengirim" required placeholder="Contoh: Budi">
+                            </div>
+                            <div>
+                                <label for="isiUcapan" class="block text-sm font-medium text-gray-700 mb-1">Ucapan Anda</label>
+                                <textarea id="isiUcapan" name="isiUcapan" rows="4" required placeholder="Tuliskan ucapan selamat Anda di sini..."></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary w-full">Kirim Ucapan</button>
+                        </form>
+                        <h3 class="font-semibold text-xl text-center text-[#a07c5b] mt-10 mb-4">Pesan & Doa</h3>
+                        <div id="ucapanContainerLoading" class="text-center text-gray-600">Memuat ucapan...</div>
+                        <div id="ucapanContainer" class="messages-container max-h-96 overflow-y-auto space-y-4"></div>
+                        <p class="text-xs text-center mt-4 text-gray-500">User ID: <span id="userIdDisplay"></span></p>
+                    </div>
+                </section>
+
+                <footer class="text-center py-12 border-t border-white/20 fade-in-section">
+                    <p class="font-dancing text-3xl text-white hero-text-shadow mb-2">Sinta & Putra</p>
+                    <p class="text-gray-200 hero-text-shadow">© <span id="currentYear"></span>. Dengan cinta, untuk hari bahagia kami.</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy as firestoreOrderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET", messagingSenderId: "YOUR_MESSAGING_SENDER_ID", appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        setPersistence(auth, browserLocalPersistence);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pernikahan-sinta-putra-dev';
+        const ucapanCollectionPath = `/artifacts/${appId}/public/data/ucapan`;
+        let currentUserId = null;
+
+        const messageModal = document.getElementById('messageModal');
+        const modalTextMessage = document.getElementById('modalTextMessage');
+        const closeModalButton = document.getElementById('closeModalButton');
+        function showModal(message) {
+            modalTextMessage.textContent = message;
+            messageModal.classList.add('is-open');
+        }
+        closeModalButton.addEventListener('click', () => messageModal.classList.remove('is-open'));
+
+        const particleContainer = document.getElementById('particle-container');
+        const numParticles = 50;
+        function createParticle() {
+            let particle = document.createElement('div');
+            particle.classList.add('particle');
+            const size = Math.random() * 6 + 2;
+            particle.style.width = `${size}px`; particle.style.height = particle.style.width;
+            particle.style.setProperty('--start-x', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--mid-x', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--end-x', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--start-scale', `${Math.random() * 0.5 + 0.3}`);
+            particle.style.setProperty('--end-scale', `${Math.random() * 0.5 + 0.3}`);
+            particle.style.setProperty('--max-opacity', `${Math.random() * 0.3 + 0.2}`); 
+            particle.style.setProperty('--mid-opacity', `${Math.random() * 0.2 + 0.1}`); 
+            particle.style.animationDelay = `${Math.random() * 25}s`;
+            particle.style.animationDuration = `${Math.random() * 15 + 20}s`; 
+            particleContainer.appendChild(particle);
+            particle.addEventListener('animationend', () => particle.remove());
+        }
+        for (let i = 0; i < numParticles; i++) createParticle();
+        
+        const birdContainer = document.getElementById('birdContainer');
+        const numBirds = 3; 
+        const birdSVG = `
+            <svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.3,26.3c0,0,15-11,29-1C50.5,34.5,51.8,50,51.8,50s-6-20.7,9.3-29.7S90.7,2.5,90.7,2.5S78.8,12.2,70,18.5
+                c-8.8,6.3-16.7,6-16.7,6s3.3-11-11.7-13.3S9.3,26.3,9.3,26.3z"/>
+                <path d="M13.3,32.3c0,0,10.7,6.7,22.7,0c11.9-6.7,18.7-10.7,18.7-10.7s-12.7,8.7-20.7,12C26,37.3,13.3,32.3,13.3,32.3z"/>
+            </svg>
+        `;
+
+        for (let i = 0; i < numBirds; i++) {
+            const bird = document.createElement('div');
+            bird.classList.add('bird');
+            bird.innerHTML = birdSVG;
+            bird.style.setProperty('--start-y', `${Math.random() * 60 + 10}vh`); 
+            bird.style.setProperty('--mid-y', `${Math.random() * 60 + 10}vh`);   
+            bird.style.setProperty('--end-y', `${Math.random() * 60 + 10}vh`);   
+            bird.style.animationDuration = `${Math.random() * 10 + 15}s`; 
+            bird.style.animationDelay = `${Math.random() * 10}s`;      
+            birdContainer.appendChild(bird);
+        }
+
+        const guestNameElement = document.getElementById('guestName');
+        const path = window.location.pathname;
+        const pathSegments = path.split('/').filter(segment => segment !== ""); 
+        if (pathSegments.length > 0) {
+            const guestNameRaw = pathSegments[pathSegments.length - 1];
+            if (guestNameRaw.toLowerCase() !== 'index.html' && guestNameRaw !== "") {
+                 const guestNameDecoded = decodeURIComponent(guestNameRaw);
+                 const guestNameFormatted = guestNameDecoded.replace(/[-_]+/g, ' ').trim();
+                 guestNameElement.textContent = guestNameFormatted || "Bapak/Ibu/Saudara/i";
+                 const namaPengirimInput = document.getElementById('namaPengirim');
+                 if (namaPengirimInput && guestNameFormatted !== "Bapak/Ibu/Saudara/i") {
+                    namaPengirimInput.value = guestNameFormatted;
+                 }
+            }
+        }
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) currentUserId = user.uid;
+            else {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                    else await signInAnonymously(auth);
+                    currentUserId = auth.currentUser ? auth.currentUser.uid : crypto.randomUUID();
+                } catch (error) {
+                    currentUserId = crypto.randomUUID(); 
+                }
+            }
+            document.getElementById('userIdDisplay').textContent = currentUserId || 'Memuat...';
+            loadUcapan(); 
+        });
+
+        const ucapanForm = document.getElementById('ucapanForm');
+        ucapanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) { showModal("Autentikasi pengguna belum siap."); return; }
+            const namaPengirim = document.getElementById('namaPengirim').value.trim();
+            const isiUcapan = document.getElementById('isiUcapan').value.trim();
+            if (!namaPengirim || !isiUcapan) { showModal("Nama dan isi ucapan tidak boleh kosong."); return; }
+            try {
+                await addDoc(collection(db, ucapanCollectionPath), {
+                    nama: namaPengirim, ucapan: isiUcapan, timestamp: serverTimestamp(), userId: currentUserId
+                });
+                showModal("Ucapan Anda berhasil terkirim! Terima kasih.");
+                ucapanForm.reset();
+                if (guestNameElement.textContent !== "Bapak/Ibu/Saudara/i") {
+                    document.getElementById('namaPengirim').value = guestNameElement.textContent;
+                }
+            } catch (error) { console.error("Error adding document: ", error); showModal("Gagal mengirim ucapan."); }
+        });
+
+        const ucapanContainer = document.getElementById('ucapanContainer');
+        const ucapanLoading = document.getElementById('ucapanContainerLoading');
+        function loadUcapan() {
+            if (!currentUserId) { ucapanLoading.textContent = "Menunggu autentikasi..."; return; }
+            const q = query(collection(db, ucapanCollectionPath), firestoreOrderBy("timestamp", "desc"), limit(50)); 
+            onSnapshot(q, (querySnapshot) => {
+                ucapanLoading.style.display = 'none'; ucapanContainer.innerHTML = ''; 
+                if (querySnapshot.empty) { ucapanContainer.innerHTML = '<p class="text-center text-gray-500">Belum ada ucapan.</p>'; return; }
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data(); const messageDiv = document.createElement('div');
+                    messageDiv.className = 'bg-[#fefcfb] p-4 rounded-lg shadow-sm border border-gray-200/80';
+                    const sanitizedNama = data.nama.replace(/</g, "<").replace(/>/g, ">");
+                    const sanitizedUcapan = data.ucapan.replace(/</g, "<").replace(/>/g, ">");
+                    messageDiv.innerHTML = `
+                        <p class="font-semibold text-[#a07c5b] text-md">${sanitizedNama}</p>
+                        <p class="text-gray-700 text-sm mt-1 whitespace-pre-wrap">${sanitizedUcapan}</p>
+                        <p class="text-xs text-gray-400 mt-2 text-right">${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString('id-ID') : 'Baru saja'}</p>
+                    `;
+                    ucapanContainer.appendChild(messageDiv);
+                });
+            }, (error) => { console.error("Error fetching messages: ", error); ucapanLoading.textContent = "Gagal memuat ucapan."; showModal("Tidak dapat memuat ucapan."); });
+        }
+
+        const sections = document.querySelectorAll('.fade-in-section');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('is-visible'); });
+        }, { threshold: 0.1 });
+        sections.forEach(section => observer.observe(section));
+
+        const music = document.getElementById('bgMusic');
+        const musicControlButton = document.getElementById('musicControl');
+        const musicIcon = musicControlButton.querySelector('i');
+        music.play().then(() => {
+            musicIcon.classList.replace('fa-volume-mute', 'fa-volume-up');
+        }).catch(() => {
+            music.muted = true; musicIcon.classList.replace('fa-volume-up', 'fa-volume-mute');
+        });
+        musicControlButton.addEventListener('click', () => {
+            if (music.muted) {
+                music.muted = false; if (music.paused) music.play();
+                musicIcon.classList.replace('fa-volume-mute', 'fa-volume-up');
+            } else {
+                music.muted = true; musicIcon.classList.replace('fa-volume-up', 'fa-volume-mute');
+            }
+        });
+
+        window.copyToClipboard = function(elementId, itemName) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy; document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                document.execCommand('copy'); showModal(`${itemName} "${textToCopy}" berhasil disalin.`);
+            } catch (err) { showModal(`Gagal menyalin ${itemName}.`); }
+            document.body.removeChild(tempTextArea);
+        }
+
+        const sliderContainer = document.getElementById('imageSliderContainer');
+        if (sliderContainer) { 
+            const images = sliderContainer.querySelectorAll('.slider-image'); let currentIndex = 0;
+            const slideInterval = 5000; 
+            function showNextImage() {
+                if (images.length === 0) return;
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                images[currentIndex].classList.add('active');
+            }
+            if (images.length > 0) { images[0].classList.add('active'); setInterval(showNextImage, slideInterval); }
+        }
+
+        const toggleGiftButton = document.getElementById('toggleGiftButton');
+        const giftDetailsContainer = document.getElementById('giftDetailsContainer');
+        if (toggleGiftButton && giftDetailsContainer) {
+            toggleGiftButton.addEventListener('click', () => {
+                const isHidden = giftDetailsContainer.classList.contains('hidden');
+                if (isHidden) {
+                    giftDetailsContainer.classList.remove('hidden');
+                    toggleGiftButton.textContent = 'Sembunyikan Info Hadiah';
+                } else {
+                    giftDetailsContainer.classList.add('hidden');
+                    toggleGiftButton.textContent = 'Tampilkan Info Hadiah';
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
